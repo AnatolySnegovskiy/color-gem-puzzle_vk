@@ -27,7 +27,7 @@
     const buildUrl = "Build";
     const loaderUrl = buildUrl + "/color-gem-puzzle_vk_git.loader.js";
     const config = {
-        dataUrl: buildUrl + "/428d559da37397ac69463c172e464211.data.unityweb",
+        dataUrl: buildUrl + "/0c3f8b2dd07757699216d0d9e6ecfeea.data.unityweb",
         frameworkUrl: buildUrl + "/ea0ac45dbf6c8e46fe55c3260ad9df12.js.unityweb",
         codeUrl: buildUrl + "/dc0259c4eb0adcbc0ef4fb88c11ab795.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
@@ -83,7 +83,26 @@
         });
     };
     vkBridge.send('VKWebAppInit');
-    
+
+    function auth() {
+        vkBridge.send('VKWebAppGetUserInfo').then(_info => {
+            console.log(_info);
+        });
+    }
+
+    function getUserData() {
+        vkBridge.send("VKWebAppStorageGet", {"keys": ["_save"]}).then(data => {
+            console.log(data);
+        });
+    }
+
+    function setUserData(data) {
+        console.log(data);
+        vkBridge.send('VKWebAppStorageSet', {"key": "_save", "value": data}).then(_info => {
+            console.log("Saved!")
+        });
+    }
+
     function showFullscrenAd() {
         vkBridge.send('VKWebAppShowNativeAds', {
             ad_format: 'interstitial'
@@ -91,17 +110,62 @@
             if (data.result) {
                 newInstance.SendMessage('YandexSDK', 'OnInterstitialShown');
             } else {
-                newInstance.SendMessage('YandexSDK', 'OnInterstitialFailed', error);
+                newInstance.SendMessage('YandexSDK', 'OnInterstitialFailed', JSON.stringify(data));
             }
         }).catch((error) => {
-            newInstance.SendMessage('YandexSDK', 'OnInterstitialFailed', error);
+            newInstance.SendMessage('YandexSDK', 'OnInterstitialFailed', JSON.stringify(error));
         });
     }
-    
+
+    function showRewardedAd() {
+        vkBridge.send('VKWebAppShowNativeAds', {
+            ad_format: 'reward'
+        }).then((data) => {
+            if (data.result) {
+                newInstance.SendMessage('YandexSDK', 'OnRewarded', id);
+            } else {
+                newInstance.SendMessage('YandexSDK', 'OnRewardedClose', id);
+            }
+        }).catch((error) => {
+            newInstance.SendMessage('YandexSDK', 'OnRewardedError', JSON.stringify(data));
+        });
+    }
+
+
+    function quit() {
+        newInstance.Quit().then(
+            () => {
+                window.open('https://yandex.ru/games/', '_self', false);
+                newInstance = null;
+                unityInstance = null;
+            }
+        );
+    }
+
     function startYa() {
         getLang();
     }
-    
+
+    function initPayments() {
+        sdk.getPayments().then(_payments => {
+            // Покупки доступны.
+            payments = _payments;
+        }).catch(err => {
+        })
+    }
+
+    function buy(id) {
+        payments.purchase(id).then(purchase => {
+            // Покупка успешно совершена!
+            newInstance.SendMessage('YandexSDK', 'OnPurchaseSuccess', id);
+        }).catch(err => {
+            // Покупка не удалась: в консоли разработчика не добавлен товар с таким id,
+            // пользователь не авторизовался, передумал и закрыл окно оплаты,
+            // истекло отведенное на покупку время, не хватило денег и т. д.
+            newInstance.SendMessage('YandexSDK', 'OnPurchaseFailed', err);
+        })
+    }
+
     function getLang() {
         let url = document.location.search
         let params = new URLSearchParams(url);
@@ -124,6 +188,10 @@
     };
 
     document.body.appendChild(script);
+    auth();
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = "nnne";
+    }
 </script>
 </body>
 </html>
