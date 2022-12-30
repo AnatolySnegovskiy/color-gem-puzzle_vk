@@ -29,7 +29,7 @@
     const buildUrl = "Build";
     const loaderUrl = buildUrl + "/color-gem-puzzle_vk_git.loader.js";
     const config = {
-        dataUrl: buildUrl + "/9a85160a389033f7690977847424dcda.data.unityweb",
+        dataUrl: buildUrl + "/c3673fd5ccf3e653469e6e01e95a8b8e.data.unityweb",
         frameworkUrl: buildUrl + "/ea0ac45dbf6c8e46fe55c3260ad9df12.js.unityweb",
         codeUrl: buildUrl + "/dc0259c4eb0adcbc0ef4fb88c11ab795.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
@@ -197,7 +197,7 @@
     const Banner = () => {
         const [bannerData, setBannerData] = useState({});
         useEffect(() => {
-            bridge.send('VKWebAppGetAds')
+            vkBridge.send('VKWebAppGetAds')
                 .then((bannerInfo) => {
                     setBannerData(bannerInfo);
                 });
