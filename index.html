@@ -7,6 +7,8 @@
     <title>Color Gem Puzzle</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@vkontakte/vkui@5.0.3/dist/vkui.css">
+    <script src="https://unpkg.com/@vkontakte/vkui@5.0.3/dist/cjs/index.js"></script>
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
 </head>
 <body class="light">
@@ -27,7 +29,7 @@
     const buildUrl = "Build";
     const loaderUrl = buildUrl + "/color-gem-puzzle_vk_git.loader.js";
     const config = {
-        dataUrl: buildUrl + "/0c3f8b2dd07757699216d0d9e6ecfeea.data.unityweb",
+        dataUrl: buildUrl + "/9a85160a389033f7690977847424dcda.data.unityweb",
         frameworkUrl: buildUrl + "/ea0ac45dbf6c8e46fe55c3260ad9df12.js.unityweb",
         codeUrl: buildUrl + "/dc0259c4eb0adcbc0ef4fb88c11ab795.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
@@ -188,9 +190,24 @@
     };
 
     document.body.appendChild(script);
-    auth();
     if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = "nnne";
+    }
+
+    const Banner = () => {
+        const [bannerData, setBannerData] = useState({});
+        useEffect(() => {
+            bridge.send('VKWebAppGetAds')
+                .then((bannerInfo) => {
+                    setBannerData(bannerInfo);
+                });
+        }, []);
+
+        if (!bannerData) {
+            return null;
+        }
+
+        return <PromoBanner bannerData={bannerData} />;
     }
 </script>
 </body>
